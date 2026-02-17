@@ -1,9 +1,8 @@
-//mod agent_client;
 mod routes;
 mod state;
 
 use axum::{Router, routing::{get, post}};
-use routes::processes::{processes, push_metrics};
+use routes::processes::{processes, push_metrics, kill_process, get_commands};
 use tokio::net::TcpListener;
 use state::AppState;
 use routes::agents::list_agents;
@@ -24,7 +23,9 @@ async fn main() {
 
     let app = Router::new()
         .route("/api/processes", get(processes))
+        .route("/api/processes/kill", post(kill_process))
         .route("/api/agents", get(list_agents))
+        .route("/api/agents/:agent_id/commands", get(get_commands))
         .route(
             "/api/agents/:agent_id/metrics",
             post(push_metrics),
@@ -38,5 +39,8 @@ async fn main() {
 
     let listener = TcpListener::bind(addr).await.unwrap();
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app.into_make_service_with_connect_info::<std::net::SocketAddr>())
+    .await
+    .unwrap();
+
 }
