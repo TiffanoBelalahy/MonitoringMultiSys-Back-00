@@ -34,21 +34,45 @@ pub async fn processes(
 }
 
 
+// pub async fn push_metrics(
+//     ConnectInfo(addr): ConnectInfo<SocketAddr>,
+//     Path(agent_id): Path<String>,
+//     State(state): State<AppState>,
+//     Json(payload): Json<serde_json::Value>,
+// ) {
+//     let agent_payload = crate::state::AgentPayload {
+//         processes: payload["processes"].clone(),
+//         system_stats: payload["system_stats"].clone(),
+//         ip: addr.ip().to_string(),
+//     };
+
+//     let mut agents = state.agents.write().await;
+//     agents.insert(agent_id, agent_payload);
+// }
 pub async fn push_metrics(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Path(agent_id): Path<String>,
     State(state): State<AppState>,
     Json(payload): Json<serde_json::Value>,
 ) {
-    let agent_payload = crate::state::AgentPayload {
-        processes: payload["processes"].clone(),
-        system_stats: payload["system_stats"].clone(),
-        ip: addr.ip().to_string(),
-    };
-
     let mut agents = state.agents.write().await;
-    agents.insert(agent_id, agent_payload);
+
+    // Si l'agent n'existe pas encore, on l'ajoute
+    let agent_entry = agents.entry(agent_id.clone()).or_insert(crate::state::AgentPayload {
+        processes: serde_json::Value::Array(vec![]),
+        system_stats: serde_json::Value::Null,
+        ip: addr.ip().to_string(),
+    });
+
+    // Mettre à jour les metrics
+    agent_entry.processes = payload["processes"].clone();
+    agent_entry.system_stats = payload["system_stats"].clone();
+    agent_entry.ip = addr.ip().to_string();
+
+    println!("Metrics received from agent {}", agent_id);
 }
+
+
 
 
 #[derive(Deserialize)]
