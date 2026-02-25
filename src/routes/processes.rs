@@ -34,21 +34,6 @@ pub async fn processes(
 }
 
 
-// pub async fn push_metrics(
-//     ConnectInfo(addr): ConnectInfo<SocketAddr>,
-//     Path(agent_id): Path<String>,
-//     State(state): State<AppState>,
-//     Json(payload): Json<serde_json::Value>,
-// ) {
-//     let agent_payload = crate::state::AgentPayload {
-//         processes: payload["processes"].clone(),
-//         system_stats: payload["system_stats"].clone(),
-//         ip: addr.ip().to_string(),
-//     };
-
-//     let mut agents = state.agents.write().await;
-//     agents.insert(agent_id, agent_payload);
-// }
 pub async fn push_metrics(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Path(agent_id): Path<String>,
@@ -80,24 +65,6 @@ pub struct KillParams {
     pub agent_id: String,
     pub pid: u32,
 }
-
-// pub async fn kill_process(
-//     State(state): State<AppState>,
-//     Json(payload): Json<KillParams>,
-// ) -> Json<bool> {
-
-//     let agents = state.agents.read().await;
-
-//     if let Some(_agent) = agents.get(&payload.agent_id) {
-//         // ⚠️ ici il faut que ton agent supporte le kill réel
-//         println!("Kill request for PID {} on agent {}", payload.pid, payload.agent_id);
-
-//         // Pour l’instant simulation :
-//         return Json(true);
-//     }
-
-//     Json(false)
-// }
 
 pub async fn kill_process(
     State(state): State<AppState>,

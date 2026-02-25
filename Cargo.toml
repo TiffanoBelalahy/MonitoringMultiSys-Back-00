@@ -15,10 +15,11 @@ sqlx = { version = "0.7", features = [
     "postgres",
     "runtime-tokio",
     "macros",
-    "uuid"
+    "uuid",
+    "chrono"
 ] }
 jsonwebtoken = "9"
 argon2 = "0.5"
-uuid = { version = "1", features = ["v4"] }
+uuid = { version = "1", features = ["v4", "serde"] }
 dotenvy = "0.15"
 chrono = { version = "0.4", features = ["clock"] }

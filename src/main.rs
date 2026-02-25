@@ -4,7 +4,8 @@ mod state;
 use axum::{Router, routing::{get, post}};
 use routes::processes::{processes, push_metrics, kill_process, get_commands};
 use routes::agents::list_agents;
-use routes::auth::{login, register};
+use routes::auth::{login, register, delete_user};
+use axum::routing::delete;
 
 use tokio::net::TcpListener;
 use state::AppState;
@@ -38,7 +39,7 @@ async fn main() {
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
         .allow_headers(Any);
 
     let app = Router::new()
@@ -48,12 +49,13 @@ async fn main() {
         .route("/api/agents/:agent_id/commands", get(get_commands))
         .route("/api/auth/register", post(register))
         .route("/api/auth/login", post(login))
+        .route("/api/users/:user_id", delete(delete_user))
         .route("/api/agents/:agent_id/metrics", post(push_metrics))
         .with_state(state)
         .layer(cors);
 
     let addr = "0.0.0.0:8081";
-    println!("Server running on http://{addr}");
+    println!("Server running on http://{addr}"); 
 
     let listener = TcpListener::bind(addr).await.unwrap();
 

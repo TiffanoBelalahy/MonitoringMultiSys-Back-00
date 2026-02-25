@@ -6,6 +6,11 @@ use argon2::password_hash::{SaltString, PasswordHash, rand_core::OsRng};
 use jsonwebtoken::{encode, Header, EncodingKey};
 use std::env;
 use sqlx::Row;
+use axum::http::StatusCode;
+use axum::extract::Path;
+use axum::{
+    response::IntoResponse,
+};
 
 use crate::state::AppState;
 
@@ -105,4 +110,22 @@ pub async fn login(
     .unwrap();
 
     Json(AuthResponse { token })
+}
+
+// ---------------- DELETE USER ----------------
+pub async fn delete_user(
+    State(state): State<AppState>,
+    Path(user_id): Path<Uuid>,
+) -> Result<StatusCode, StatusCode> {
+    
+    let result = sqlx::query("DELETE FROM users WHERE id = $1")
+        .bind(user_id)
+        .execute(&state.db)
+        .await;
+
+    match result {
+        Ok(res) if res.rows_affected() > 0 => Ok(StatusCode::NO_CONTENT),
+        Ok(_) => Err(StatusCode::NOT_FOUND),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
 }
