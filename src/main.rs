@@ -5,6 +5,7 @@ use axum::{Router, routing::{get, post}};
 use routes::processes::{processes, push_metrics, kill_process, get_commands};
 use routes::agents::list_agents;
 use routes::auth::{login, register, delete_user};
+use routes::processes::metrics_history;
 use axum::routing::delete;
 
 use tokio::net::TcpListener;
@@ -51,6 +52,7 @@ async fn main() {
         .route("/api/auth/login", post(login))
         .route("/api/users/:user_id", delete(delete_user))
         .route("/api/agents/:agent_id/metrics", post(push_metrics))
+        .route("/api/agents/:agent_id/history", get(metrics_history))
         .with_state(state)
         .layer(cors);
 
