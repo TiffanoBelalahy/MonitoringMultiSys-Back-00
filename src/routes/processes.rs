@@ -42,6 +42,19 @@ pub async fn push_metrics(
     State(state): State<AppState>,
     Json(payload): Json<serde_json::Value>,
 ) {
+    // 🔥 créer agent automatiquement
+    let _ = sqlx::query(
+        "INSERT INTO agents (id, name)
+         VALUES ($1, $2)
+         ON CONFLICT (id) DO NOTHING"
+    )
+    .bind(&agent_id)
+    .bind(&agent_id)
+    .execute(&state.db)
+    .await;
+
+
+
     let mut agents = state.agents.write().await;
 
     // Si l'agent n'existe pas encore, on l'ajoute

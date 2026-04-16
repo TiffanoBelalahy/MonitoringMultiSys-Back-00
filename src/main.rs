@@ -3,7 +3,7 @@ mod state;
 
 use axum::{Router, routing::{get, post}};
 use routes::processes::{processes, push_metrics, kill_process, get_commands};
-use routes::agents::list_agents;
+use routes::agents::{list_agents, rename_agent, create_company, list_companies, create_agent, assign_agent_to_company};
 use routes::auth::{login, register, delete_user};
 use routes::processes::metrics_history;
 use axum::routing::delete;
@@ -18,6 +18,7 @@ use dotenvy::dotenv;
 use std::{env, collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 use sqlx::PgPool;
+
 
 #[tokio::main]
 async fn main() {
@@ -40,7 +41,7 @@ async fn main() {
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
+        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS, Method::PUT])
         .allow_headers(Any);
 
     let app = Router::new()
@@ -53,6 +54,11 @@ async fn main() {
         .route("/api/users/:user_id", delete(delete_user))
         .route("/api/agents/:agent_id/metrics", post(push_metrics))
         .route("/api/agents/:agent_id/history", get(metrics_history))
+        .route("/api/agents/:agent_id", axum::routing::put(rename_agent))
+        .route("/api/companies", get(list_companies))
+        .route("/api/companies", post(create_company))
+        .route("/api/agents", post(create_agent))
+        .route("/api/agents/:agent_id/assign", axum::routing::put(assign_agent_to_company))
         .with_state(state)
         .layer(cors);
 
